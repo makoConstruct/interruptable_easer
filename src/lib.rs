@@ -78,19 +78,27 @@ pub fn ease(
     if start_time == f32::NEG_INFINITY {
         return end_value;
     }
-    let normalized_time = (current_time - start_time) / (end_time - start_time);
-    let normalized_velocity =
-        initial_velocity / (end_value - start_value) * (end_time - start_time);
-    // if velocity is too high, it just resorts to linear acceleration
-    let normalized_output = if normalized_velocity > 2f32 {
-        linear_acceleration_ease_in_out_with_initial_velocity(normalized_time, normalized_velocity)
+    if start_value == end_value {
+        //having difficulty solving for this case. Screw it. It basically never happens anyway.
+        return start_value;
     } else {
-        constant_acceleration_ease_in_out_with_initial_velocity(
-            normalized_time,
-            normalized_velocity,
-        )
-    };
-    start_value + normalized_output * (end_value - start_value)
+        let normalized_time = (current_time - start_time) / (end_time - start_time);
+        let normalized_velocity =
+            initial_velocity / (end_value - start_value) * (end_time - start_time);
+        // if velocity is too high, it just resorts to linear acceleration
+        let normalized_output = if normalized_velocity > 2f32 {
+            linear_acceleration_ease_in_out_with_initial_velocity(
+                normalized_time,
+                normalized_velocity,
+            )
+        } else {
+            constant_acceleration_ease_in_out_with_initial_velocity(
+                normalized_time,
+                normalized_velocity,
+            )
+        };
+        start_value + normalized_output * (end_value - start_value)
+    }
 }
 
 pub fn vel_ease(
@@ -104,21 +112,25 @@ pub fn vel_ease(
     if start_time == f32::NEG_INFINITY {
         return 0.0;
     }
-    let normalized_time = (current_time - start_time) / (end_time - start_time);
-    let normalized_velocity =
-        initial_velocity / (end_value - start_value) * (end_time - start_time);
-    let normalized_output = if normalized_velocity > 2f32 {
-        velocity_of_linear_acceleration_ease_in_out_with_initial_velocity(
-            normalized_time,
-            normalized_velocity,
-        )
+    if start_value == end_value {
+        0.0
     } else {
-        velocity_of_constant_acceleration_ease_in_out_with_initial_velocity(
-            normalized_time,
-            normalized_velocity,
-        )
-    };
-    normalized_output * (end_value - start_value) / (end_time - start_time)
+        let normalized_time = (current_time - start_time) / (end_time - start_time);
+        let normalized_velocity =
+            initial_velocity / (end_value - start_value) * (end_time - start_time);
+        let normalized_output = if normalized_velocity > 2f32 {
+            velocity_of_linear_acceleration_ease_in_out_with_initial_velocity(
+                normalized_time,
+                normalized_velocity,
+            )
+        } else {
+            velocity_of_constant_acceleration_ease_in_out_with_initial_velocity(
+                normalized_time,
+                normalized_velocity,
+            )
+        };
+        normalized_output * (end_value - start_value) / (end_time - start_time)
+    }
 }
 
 /// just the above two woven together
@@ -181,7 +193,7 @@ impl InterruptableEaser {
             start_velocity: 0.0,
         }
     }
-    
+
     /// begins the approach towards `v`
     pub fn approach(&mut self, v: f32, current_time: f32, transition_duration: f32) {
         (self.start_value, self.start_velocity) = ease_val_vel(
@@ -195,7 +207,7 @@ impl InterruptableEaser {
         self.start_time = current_time;
         self.end_value = v;
     }
-    
+
     /// gets the value as it would be at the current time
     pub fn v(&self, current_time: f32, transition_duration: f32) -> f32 {
         ease(
@@ -210,10 +222,10 @@ impl InterruptableEaser {
 }
 
 #[cfg(test)]
-mod tests{
+mod tests {
     use super::*;
     #[test]
-    fn basic(){
+    fn basic() {
         let mut ie = InterruptableEaser::new(-1.0);
         assert_eq!(ie.v(20.0, 0.2), -1.0);
         ie.approach(1.0, 20.0, 0.2);
