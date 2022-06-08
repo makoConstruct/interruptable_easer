@@ -194,6 +194,10 @@ impl InterruptableEaser {
 
     /// begins the approach towards `v`
     pub fn approach(&mut self, v: f32, current_time: f32, transition_duration: f32) {
+        //without this, there was an issue where if you kept telling it to approach the same value repeadedly, it would end up overshooting the target slightly
+        if v == self.end_value {
+            return;
+        }
         (self.start_value, self.start_velocity) = ease_val_vel(
             self.start_value,
             self.end_value,
@@ -206,7 +210,7 @@ impl InterruptableEaser {
         self.end_value = v;
     }
 
-    /// gets the value as it would be at the current time
+    /// gets the animated value for the current time
     pub fn v(&self, current_time: f32, transition_duration: f32) -> f32 {
         ease(
             self.start_value,
