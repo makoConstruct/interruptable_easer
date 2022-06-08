@@ -81,24 +81,20 @@ pub fn ease(
     if start_value == end_value {
         //having difficulty solving for this case. Screw it. It basically never happens anyway.
         return start_value;
-    } else {
-        let normalized_time = (current_time - start_time) / (end_time - start_time);
-        let normalized_velocity =
-            initial_velocity / (end_value - start_value) * (end_time - start_time);
-        // if velocity is too high, it just resorts to linear acceleration
-        let normalized_output = if normalized_velocity > 2f32 {
-            linear_acceleration_ease_in_out_with_initial_velocity(
-                normalized_time,
-                normalized_velocity,
-            )
-        } else {
-            constant_acceleration_ease_in_out_with_initial_velocity(
-                normalized_time,
-                normalized_velocity,
-            )
-        };
-        start_value + normalized_output * (end_value - start_value)
     }
+    let normalized_time = (current_time - start_time) / (end_time - start_time);
+    let normalized_velocity =
+        initial_velocity / (end_value - start_value) * (end_time - start_time);
+    // if velocity is too high, it just resorts to linear acceleration
+    let normalized_output = if normalized_velocity > 2f32 {
+        linear_acceleration_ease_in_out_with_initial_velocity(normalized_time, normalized_velocity)
+    } else {
+        constant_acceleration_ease_in_out_with_initial_velocity(
+            normalized_time,
+            normalized_velocity,
+        )
+    };
+    start_value + normalized_output * (end_value - start_value)
 }
 
 pub fn vel_ease(
@@ -113,24 +109,23 @@ pub fn vel_ease(
         return 0.0;
     }
     if start_value == end_value {
-        0.0
-    } else {
-        let normalized_time = (current_time - start_time) / (end_time - start_time);
-        let normalized_velocity =
-            initial_velocity / (end_value - start_value) * (end_time - start_time);
-        let normalized_output = if normalized_velocity > 2f32 {
-            velocity_of_linear_acceleration_ease_in_out_with_initial_velocity(
-                normalized_time,
-                normalized_velocity,
-            )
-        } else {
-            velocity_of_constant_acceleration_ease_in_out_with_initial_velocity(
-                normalized_time,
-                normalized_velocity,
-            )
-        };
-        normalized_output * (end_value - start_value) / (end_time - start_time)
+        return 0.0;
     }
+    let normalized_time = (current_time - start_time) / (end_time - start_time);
+    let normalized_velocity =
+        initial_velocity / (end_value - start_value) * (end_time - start_time);
+    let normalized_output = if normalized_velocity > 2f32 {
+        velocity_of_linear_acceleration_ease_in_out_with_initial_velocity(
+            normalized_time,
+            normalized_velocity,
+        )
+    } else {
+        velocity_of_constant_acceleration_ease_in_out_with_initial_velocity(
+            normalized_time,
+            normalized_velocity,
+        )
+    };
+    normalized_output * (end_value - start_value) / (end_time - start_time)
 }
 
 /// just the above two woven together
@@ -142,7 +137,10 @@ pub fn ease_val_vel(
     current_time: f32,
     initial_velocity: f32,
 ) -> (f32, f32) {
-    if start_time == f32::NEG_INFINITY {
+    if start_time == f32::NEG_INFINITY ||
+        /* having difficulty solving for this case. Screw it. It basically never happens anyway. */
+        start_value == end_value
+    {
         return (end_value, 0.0);
     }
     let normalized_time = (current_time - start_time) / (end_time - start_time);

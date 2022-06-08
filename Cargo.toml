@@ -1,10 +1,10 @@
 [package]
 name = "interruptable_easer"
-version = "1.1.0"
+version = "1.1.1"
 edition = "2021"
 authors = ["mako yass"]
 repository = "https://github.com/makoConstruct/interruptable_easer"
 license = "MIT"
 keywords = ["animation"]
-description = "defines functions and a struct for representing a cleanly interruptable/redirectable ease-in-out animation, which essentially goes smoothly and reliably to the target value, in the given amount of time, with a minimum constant acceleration."
+description = "Cleanly interruptable/redirectable ease-in-out animation state. Goes smoothly and reliably to the target value, in the given amount of time, with a minimum constant acceleration, without ever showing any sudden jumps or jerks, even when interrupted mid-way."
 
